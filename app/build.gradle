@@ -58,10 +58,6 @@ dependencies {
     implementation Deps.navigationFragment
     implementation Deps.navigationUI
 
-    implementation Deps.glide
-    implementation Deps.glideOkHttp3
-    kapt Deps.glideCompiler
-
     implementation Deps.koinCore
     implementation Deps.koinAndroid
     implementation Deps.koinCoreScope
