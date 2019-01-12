@@ -1,0 +1,73 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.gis.giscurrenciesapp"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "default"
+
+    productFlavors {
+        stage {
+            dimension "default"
+        }
+
+        prod {
+            dimension "default"
+        }
+    }
+
+    dataBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+    implementation project(':featureCurrencies')
+    implementation project(':repository')
+    implementation project(':navigation')
+    implementation project(':utils')
+
+    implementation Deps.kotlinStdlib
+    implementation Deps.appCompat
+
+    implementation Deps.rxJava
+    implementation Deps.rxKotlin
+    implementation Deps.rxAndroid
+
+    implementation Deps.navigationFragment
+    implementation Deps.navigationUI
+
+    implementation Deps.glide
+    implementation Deps.glideOkHttp3
+    kapt Deps.glideCompiler
+
+    implementation Deps.koinCore
+    implementation Deps.koinAndroid
+    implementation Deps.koinCoreScope
+    implementation Deps.koinAndroidViewModel
+
+    testImplementation Deps.jUnit
+    androidTestImplementation Deps.androidTestRunner
+    androidTestImplementation Deps.espresso
+}

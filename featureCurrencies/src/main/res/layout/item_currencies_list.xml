@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <FrameLayout
+    android:id="@+id/currencyItemRoot"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/currency_item_height">
+
+    <ImageView
+      android:id="@+id/ivCurrencyFlag"
+      android:layout_width="@dimen/currency_flag_size"
+      android:layout_height="@dimen/currency_flag_size"
+      android:layout_gravity="center_vertical|start"
+      android:layout_marginStart="16dp"
+      tools:src="@drawable/flag_au" />
+
+    <TextView
+      android:id="@+id/tvCurrencyName"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical|start"
+      android:layout_marginStart="@dimen/currency_name_start_margin"
+      android:textColor="@android:color/black"
+      android:textSize="24sp"
+      tools:text="AUD" />
+
+    <EditText
+      android:id="@+id/etCurrencyAmount"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="end|center_vertical"
+      android:layout_marginEnd="16dp"
+      android:maxWidth="200dp"
+      android:singleLine="true"
+      android:inputType="number"
+      android:textColor="@android:color/black"
+      android:textSize="24sp"
+      tools:text="100.0" />
+
+  </FrameLayout>
+
+</layout>
