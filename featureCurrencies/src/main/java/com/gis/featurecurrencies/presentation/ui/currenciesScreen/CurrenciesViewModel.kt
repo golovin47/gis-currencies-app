@@ -47,8 +47,7 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
   private fun processNewCurrencies(currencies: List<CurrencyListItem>, currenciesDTO: CurrenciesDTO): List<CurrencyListItem> {
     val base = CurrencyListItem(
       currency = currenciesDTO.base,
-      amount = if (currencies.isNotEmpty()) currencies[0].amount else 100.0,
-      rate = 1.0
+      amount = if (currencies.isNotEmpty()) currencies[0].amount else 100.0
     )
 
     val resultList = mutableListOf<CurrencyListItem>()
