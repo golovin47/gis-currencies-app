@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.ViewGroup
@@ -15,13 +14,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gis.featurecurrencies.R
 import com.gis.featurecurrencies.databinding.ItemCurrenciesListBinding
-import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.*
+import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.ChangeAmount
+import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.ChangeBase
 import com.gis.repoimpl.domain.entitiy.Currency
-import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
-import io.reactivex.Observable
 import io.reactivex.subjects.Subject
-import java.util.concurrent.TimeUnit
+import java.text.NumberFormat
+import java.util.*
 
 const val KEY_AMOUNT_CHANGED = "KEY_AMOUNT_CHANGED"
 
@@ -74,7 +73,7 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
   @SuppressLint("ClickableViewAccessibility")
   fun bind(item: CurrencyListItem, eventsPublisher: Subject<CurrenciesIntent>) {
     binding.tvCurrencyName.text = item.currency
-    binding.etCurrencyAmount.setText(item.amount.toString())
+    binding.etCurrencyAmount.setText(String.format("%.2f", item.amount))
     binding.ivCurrencyFlag.setImageResource(
       when (item.currency) {
         Currency.AUD.name -> R.drawable.flag_au
@@ -118,7 +117,10 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
       .filter { adapterPosition == 0 }
       .doOnNext { if (it.isBlank()) binding.etCurrencyAmount.setText("0") }
       .filter { it.isNotBlank() }
-      .map { amount -> ChangeAmount(amount.toString().toDouble()) }
+      .map { amount ->
+        val nf = NumberFormat.getInstance(Locale.getDefault())
+        val amountNumber = nf.parse(amount.toString())
+        ChangeAmount(amountNumber.toDouble()) }
       .subscribe(eventsPublisher)
 
     binding.currencyItemRoot.setOnTouchListener { v, event ->
@@ -145,6 +147,6 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
   }
 
   fun updateAmount(amount: Double) {
-    binding.etCurrencyAmount.setText(amount.toString())
+    binding.etCurrencyAmount.setText(String.format("%.2f", amount))
   }
 }

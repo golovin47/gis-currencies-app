@@ -1,7 +1,7 @@
 package com.gis.featurecurrencies.presentation.ui.currenciesScreen
 
 import android.os.Bundle
-import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -65,7 +65,7 @@ class CurrenciesFragment : Fragment(), BaseView<CurrenciesState> {
   override fun initIntents() {
     viewSubscriptions = Observable.merge(listOf(
 
-      Observable.interval(1, TimeUnit.SECONDS)
+      Observable.interval(600, TimeUnit.MILLISECONDS)
         .map {
           GetCurrencies(
             if (currentState != null && currentState!!.currencies.isNotEmpty())
@@ -77,6 +77,14 @@ class CurrenciesFragment : Fragment(), BaseView<CurrenciesState> {
 
       eventsPublisher.ofType(ChangeAmount::class.java)
     ))
+      .debounce { intent ->
+        if (intent is GetCurrencies)
+          Observable.just(intent)
+            .delay(400, TimeUnit.MILLISECONDS)
+            .cast(CurrenciesIntent::class.java)
+        else
+          Observable.just(intent)
+      }
       .subscribe(vmCurrencies.viewIntentsConsumer())
   }
 
@@ -85,6 +93,10 @@ class CurrenciesFragment : Fragment(), BaseView<CurrenciesState> {
   }
 
   override fun render(state: CurrenciesState) {
+    Log.d("CURRENCIES", state.currencies.toString())
+
+    binding!!.loading = state.loading
+
     val shouldScrollToTop = currentState != null &&
       currentState!!.currencies.isNotEmpty() &&
       state.currencies.isNotEmpty() &&
@@ -96,7 +108,7 @@ class CurrenciesFragment : Fragment(), BaseView<CurrenciesState> {
 
     if (shouldScrollToTop)
       binding!!.rvCurrencies.postDelayed({
-        (binding!!.rvCurrencies.layoutManager as LinearLayoutManager).smoothScrollToPosition(binding!!.rvCurrencies, null,0)
+        (binding!!.rvCurrencies.layoutManager as LinearLayoutManager).smoothScrollToPosition(binding!!.rvCurrencies, null, 0)
       }, 300)
 
     if (state.error != null)

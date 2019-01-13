@@ -2,12 +2,33 @@
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/rvCurrencies"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+  <data>
 
-  </androidx.recyclerview.widget.RecyclerView>
+    <variable
+      name="loading"
+      type="Boolean" />
+
+    <import type="android.view.View" />
+
+  </data>
+
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rvCurrencies"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical" />
+
+    <ProgressBar
+      android:id="@+id/pbLoading"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:visibility="@{loading ? View.VISIBLE : View.GONE}" />
+
+  </FrameLayout>
 
 </layout>

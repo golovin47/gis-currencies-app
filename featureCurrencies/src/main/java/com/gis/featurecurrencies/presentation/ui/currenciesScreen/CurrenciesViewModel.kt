@@ -47,10 +47,7 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
   private fun processNewCurrencies(currencies: List<CurrencyListItem>, currenciesDTO: CurrenciesDTO): List<CurrencyListItem> {
     val base = CurrencyListItem(
       currency = currenciesDTO.base,
-      amount =
-      if (currencies.isNotEmpty())
-        String.format(Locale.US, "%.2f", currencies[0].amount).toDouble()
-      else 100.00,
+      amount = if (currencies.isNotEmpty()) currencies[0].amount else 100.0,
       rate = 1.0
     )
 
@@ -62,12 +59,12 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
           currencies
             .find { it.currency == currency.key }!!
             .copy(
-              amount = String.format(Locale.US, "%.2f", currency.value * base.amount).toDouble(),
+              amount = currency.value * base.amount,
               rate = currency.value)
         else
           CurrencyListItem(
             currency = currency.key,
-            amount = String.format(Locale.US, "%.2f", base.amount * currency.value).toDouble(),
+            amount = base.amount * currency.value,
             rate = currency.value)
 
       resultList.add(secondaryCurrency)
@@ -80,13 +77,13 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
   }
 
   private fun processChangedAmount(amount: Double, currencies: List<CurrencyListItem>): List<CurrencyListItem> {
-    val base = CurrencyListItem(currencies[0].currency, String.format(Locale.US, "%.2f", amount).toDouble())
+    val base = CurrencyListItem(currencies[0].currency, amount)
     val secondaryCurrencies = currencies.toMutableList().apply { removeAt(0) }
     val resultList = mutableListOf<CurrencyListItem>()
 
     for (item in secondaryCurrencies) {
       val secondaryCurrency = item
-        .copy(amount = String.format(Locale.US, "%.2f", item.rate * amount).toDouble())
+        .copy(amount = item.rate * amount)
 
       resultList.add(secondaryCurrency)
     }
@@ -101,6 +98,7 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
     when (stateChange) {
 
       is CurrenciesReceived -> previousState.copy(
+        loading = false,
         currencies = processNewCurrencies(previousState.currencies, stateChange.currencies)
       )
 
@@ -108,7 +106,7 @@ class CurrenciesViewModel(private val getCurrenciesUseCase: GetCurrenciesUseCase
         currencies = processChangedAmount(stateChange.amount, previousState.currencies)
       )
 
-      is Error -> previousState.copy(error = stateChange.error)
+      is Error -> previousState.copy(loading = false, error = stateChange.error)
 
       is HideError -> previousState.copy(error = null)
 
