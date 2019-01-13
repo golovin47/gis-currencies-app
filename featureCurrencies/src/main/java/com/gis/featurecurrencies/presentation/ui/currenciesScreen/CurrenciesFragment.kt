@@ -79,11 +79,10 @@ class CurrenciesFragment : Fragment(), BaseView<CurrenciesState> {
     ))
       .debounce { intent ->
         if (intent is GetCurrencies)
-          Observable.just(intent)
+          Observable.empty<CurrenciesIntent>()
             .delay(400, TimeUnit.MILLISECONDS)
-            .cast(CurrenciesIntent::class.java)
         else
-          Observable.just(intent)
+          Observable.empty()
       }
       .subscribe(vmCurrencies.viewIntentsConsumer())
   }
