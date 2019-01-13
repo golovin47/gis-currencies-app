@@ -1,16 +1,21 @@
 package com.gis.featurecurrencies.presentation.ui.currenciesScreen
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_UP
+import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.gis.featurecurrencies.R
 import com.gis.featurecurrencies.databinding.ItemCurrenciesListBinding
-import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.ChangeAmount
-import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.ChangeBase
+import com.gis.featurecurrencies.presentation.ui.currenciesScreen.CurrenciesIntent.*
 import com.gis.repoimpl.domain.entitiy.Currency
 import com.jakewharton.rxbinding2.view.RxView
 import com.jakewharton.rxbinding2.widget.RxTextView
@@ -20,22 +25,23 @@ import java.util.concurrent.TimeUnit
 
 const val KEY_AMOUNT_CHANGED = "KEY_AMOUNT_CHANGED"
 
-class CurrenciesAdapter(private val eventsPublisher: Subject<CurrenciesIntent>) : ListAdapter<CurrencyListItem, CurrencyViewHolder>(object : DiffUtil.ItemCallback<CurrencyListItem>() {
+class CurrenciesAdapter(private val eventsPublisher: Subject<CurrenciesIntent>) :
+  ListAdapter<CurrencyListItem, CurrencyViewHolder>(object : DiffUtil.ItemCallback<CurrencyListItem>() {
 
-  override fun areItemsTheSame(oldItem: CurrencyListItem, newItem: CurrencyListItem): Boolean =
-    oldItem.currency == newItem.currency
+    override fun areItemsTheSame(oldItem: CurrencyListItem, newItem: CurrencyListItem): Boolean =
+      oldItem.currency == newItem.currency
 
-  override fun areContentsTheSame(oldItem: CurrencyListItem, newItem: CurrencyListItem): Boolean =
-    oldItem.rate == newItem.rate
+    override fun areContentsTheSame(oldItem: CurrencyListItem, newItem: CurrencyListItem): Boolean =
+      oldItem.rate == newItem.rate
 
-  override fun getChangePayload(oldItem: CurrencyListItem, newItem: CurrencyListItem): Any? {
-    return Bundle().apply {
-      if (oldItem.amount != newItem.amount)
-        putDouble(KEY_AMOUNT_CHANGED, newItem.amount)
+    override fun getChangePayload(oldItem: CurrencyListItem, newItem: CurrencyListItem): Any? {
+      return Bundle().apply {
+        if (oldItem.amount != newItem.amount)
+          putDouble(KEY_AMOUNT_CHANGED, newItem.amount)
+      }
     }
-  }
 
-}) {
+  }) {
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrencyViewHolder =
     CurrencyViewHolder(
@@ -43,7 +49,8 @@ class CurrenciesAdapter(private val eventsPublisher: Subject<CurrenciesIntent>) 
         LayoutInflater.from(parent.context),
         R.layout.item_currencies_list,
         parent,
-        false)
+        false
+      )
     )
 
   override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int) {
@@ -51,7 +58,7 @@ class CurrenciesAdapter(private val eventsPublisher: Subject<CurrenciesIntent>) 
   }
 
   override fun onBindViewHolder(holder: CurrencyViewHolder, position: Int, payloads: MutableList<Any>) {
-    if (payloads.isEmpty()){
+    if (payloads.isEmpty()) {
       holder.bind(getItem(position), eventsPublisher)
       return
     }
@@ -64,6 +71,7 @@ class CurrenciesAdapter(private val eventsPublisher: Subject<CurrenciesIntent>) 
 
 class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : RecyclerView.ViewHolder(binding.root) {
 
+  @SuppressLint("ClickableViewAccessibility")
   fun bind(item: CurrencyListItem, eventsPublisher: Subject<CurrenciesIntent>) {
     binding.tvCurrencyName.text = item.currency
     binding.etCurrencyAmount.setText(item.amount.toString())
@@ -106,18 +114,34 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
       }
     )
 
-    Observable.merge(listOf(
-      RxView.clicks(binding.currencyItemRoot)
-        .throttleFirst(500, TimeUnit.MILLISECONDS)
-        .map { ChangeBase(item.currency) },
-
-      RxTextView.textChanges(binding.etCurrencyAmount)
-        .filter { adapterPosition == 0 }
-        .doOnNext { if (it.isBlank()) binding.etCurrencyAmount.setText("0") }
-        .filter { it.isNotBlank() }
-        .map { amount -> ChangeAmount(amount.toString().toDouble()) }
-    ))
+    RxTextView.textChanges(binding.etCurrencyAmount)
+      .filter { adapterPosition == 0 }
+      .doOnNext { if (it.isBlank()) binding.etCurrencyAmount.setText("0") }
+      .filter { it.isNotBlank() }
+      .map { amount -> ChangeAmount(amount.toString().toDouble()) }
       .subscribe(eventsPublisher)
+
+    binding.currencyItemRoot.setOnTouchListener { v, event ->
+      binding.etCurrencyAmount.dispatchTouchEvent(event)
+      return@setOnTouchListener true
+    }
+
+    binding.etCurrencyAmount.setOnTouchListener { v, event ->
+      if (event.action == ACTION_UP && adapterPosition != 0) {
+        eventsPublisher.onNext(ChangeBase(item.currency))
+      }
+      return@setOnTouchListener false
+    }
+
+    binding.etCurrencyAmount.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+      if (adapterPosition == 0) {
+        val imm = v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (!hasFocus) {
+          imm.hideSoftInputFromWindow(v.windowToken, 0)
+        } else
+          imm.showSoftInput(v, 0)
+      }
+    }
   }
 
   fun updateAmount(amount: Double) {

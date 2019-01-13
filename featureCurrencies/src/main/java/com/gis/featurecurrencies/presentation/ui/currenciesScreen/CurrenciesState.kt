@@ -10,6 +10,7 @@ data class CurrenciesState(
 
 
 sealed class CurrenciesIntent {
+  object Idle : CurrenciesIntent()
   class GetCurrencies(val base: String) : CurrenciesIntent()
   class ChangeBase(val base: String) : CurrenciesIntent()
   class ChangeAmount(val amount: Double) : CurrenciesIntent()
