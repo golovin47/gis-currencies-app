@@ -73,7 +73,7 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
   @SuppressLint("ClickableViewAccessibility")
   fun bind(item: CurrencyListItem, eventsPublisher: Subject<CurrenciesIntent>) {
     binding.tvCurrencyName.text = item.currency
-    binding.etCurrencyAmount.setText(String.format("%.2f", item.amount))
+    binding.etCurrencyAmount.setText(String.format(Locale.US, "%.2f", item.amount))
     binding.ivCurrencyFlag.setImageResource(
       when (item.currency) {
         Currency.AUD.name -> R.drawable.flag_au
@@ -113,13 +113,14 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
       }
     )
 
+    val numberFormat = NumberFormat.getInstance(Locale.US)
+
     RxTextView.textChanges(binding.etCurrencyAmount)
       .filter { adapterPosition == 0 }
       .doOnNext { if (it.isBlank()) binding.etCurrencyAmount.setText("0") }
       .filter { it.isNotBlank() }
       .map { amount ->
-        val nf = NumberFormat.getInstance(Locale.getDefault())
-        val amountNumber = nf.parse(amount.toString())
+        val amountNumber = numberFormat.parse(amount.toString())
         ChangeAmount(amountNumber.toDouble()) }
       .subscribe(eventsPublisher)
 
@@ -147,6 +148,6 @@ class CurrencyViewHolder(private val binding: ItemCurrenciesListBinding) : Recyc
   }
 
   fun updateAmount(amount: Double) {
-    binding.etCurrencyAmount.setText(String.format("%.2f", amount))
+    binding.etCurrencyAmount.setText(String.format(Locale.US, "%.2f", amount))
   }
 }
